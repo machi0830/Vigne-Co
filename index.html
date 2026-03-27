@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vigne & Co. — 事業は、房のように。</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080507;
+  --bg2: #0f0a0d;
+  --bg3: #160e12;
+  --wine: #8B1A2E;
+  --wine-light: #B02840;
+  --wine-pale: rgba(139,26,46,0.12);
+  --gold: #C9954A;
+  --gold-light: #E0B870;
+  --gold-pale: rgba(201,149,74,0.1);
+  --text: #F0E8E0;
+  --text-mid: #A89888;
+  --text-dim: #6A5A52;
+  --border: rgba(201,149,74,0.15);
+  --border-hover: rgba(201,149,74,0.35);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', 'Noto Serif JP', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* Custom cursor */
+.cursor {
+  position: fixed;
+  width: 8px; height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.3s, height 0.3s, opacity 0.3s;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 32px; height: 32px;
+  border: 1px solid rgba(201,149,74,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+}
+
+/* Canvas */
+#canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 28px 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.4s, padding 0.4s;
+}
+nav.scrolled {
+  background: rgba(8,5,7,0.92);
+  backdrop-filter: blur(20px);
+  padding: 18px 60px;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.nav-logo svg { width: 36px; height: 36px; }
+.nav-logo-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.08em;
+}
+.nav-logo-text span { color: var(--gold); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-mid);
+  text-decoration: none;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.3s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0; right: 0;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+  transform-origin: left;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-links a:hover::after { transform: scaleX(1); }
+
+.nav-contact {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gold);
+  border: 1px solid var(--border-hover);
+  padding: 8px 20px;
+  text-decoration: none;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background 0.3s, color 0.3s;
+}
+.nav-contact:hover {
+  background: var(--gold);
+  color: var(--bg);
+}
+
+/* HERO */
+#hero {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 60px;
+  overflow: hidden;
+}
+
+.hero-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--gold);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 1s 0.3s forwards;
+}
+
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(56px, 8vw, 120px);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeUp 1s 0.5s forwards;
+}
+.hero-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.hero-title .line2 {
+  display: block;
+  padding-left: clamp(60px, 10vw, 180px);
+}
+
+.hero-copy {
+  max-width: 480px;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-mid);
+  line-height: 2;
+  margin-bottom: 52px;
+  opacity: 0;
+  animation: fadeUp 1s 0.7s forwards;
+}
+
+.hero-cta {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  opacity: 0;
+  animation: fadeUp 1s 0.9s forwards;
+}
+.btn-primary {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--gold);
+  padding: 16px 40px;
+  text-decoration: none;
+  transition: background 0.3s, transform 0.3s;
+  display: inline-block;
+}
+.btn-primary:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+}
+.btn-secondary {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.3s;
+}
+.btn-secondary:hover { color: var(--gold); }
+.btn-secondary .arrow {
+  width: 32px;
+  height: 1px;
+  background: currentColor;
+  position: relative;
+  transition: width 0.3s;
+}
+.btn-secondary:hover .arrow { width: 48px; }
+.btn-secondary .arrow::after {
+  content: '';
+  position: absolute;
+  right: 0; top: -3px;
+  width: 7px; height: 7px;
+  border-right: 1px solid currentColor;
+  border-top: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 48px; left: 60px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  opacity: 0;
+  animation: fadeUp 1s 1.2s forwards;
+}
+.hero-scroll::before {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, var(--gold-light));
+  animation: lineDown 2s 1.5s infinite;
+}
+
+.hero-year {
+  position: absolute;
+  bottom: 48px; right: 60px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+}
+
+/* SECTION BASE */
+section {
+  position: relative;
+  z-index: 1;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--gold);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 32px; height: 1px;
+  background: var(--gold);
+}
+
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.section-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+/* MISSION */
+#mission {
+  padding: 160px 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  align-items: center;
+  border-top: 1px solid var(--border);
+}
+
+.mission-left {}
+.mission-right {
+  padding-top: 40px;
+}
+.mission-body {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--text-mid);
+  line-height: 2.2;
+  margin-top: 40px;
+}
+.mission-body strong {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.mission-stat {
+  display: flex;
+  gap: 60px;
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+.stat-item {}
+.stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 52px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+}
+
+.mission-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 3.5vw, 44px);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text);
+  border-left: 2px solid var(--gold);
+  padding-left: 32px;
+}
+.mission-quote span {
+  display: block;
+  margin-top: 20px;
+  font-size: 13px;
+  font-style: normal;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+/* SERVICES */
+#services {
+  padding: 160px 60px;
+  border-top: 1px solid var(--border);
+}
+
+.services-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 80px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.service-card {
+  background: var(--bg2);
+  padding: 48px 36px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.4s, background 0.4s;
+  cursor: pointer;
+}
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transition: transform 0.4s;
+  transform-origin: left;
+}
+.service-card:hover {
+  background: var(--bg3);
+  border-color: var(--border-hover);
+}
+.service-card:hover::before { transform: scaleX(1); }
+
+.service-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 0.2em;
+  margin-bottom: 40px;
+}
+.service-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 28px;
+  color: var(--gold);
+}
+.service-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+  color: var(--text);
+  line-height: 1.2;
+}
+.service-desc {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-dim);
+  line-height: 1.9;
+}
+.service-arrow {
+  position: absolute;
+  bottom: 36px; right: 36px;
+  width: 24px; height: 24px;
+  color: var(--gold);
+  opacity: 0;
+  transform: translate(-8px, 8px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.service-card:hover .service-arrow {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* ABOUT */
+#about {
+  padding: 160px 60px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  align-items: start;
+}
+
+.about-visual {
+  position: relative;
+  aspect-ratio: 3/4;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.about-visual-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.about-visual svg {
+  width: 60%;
+  height: 60%;
+  opacity: 0.25;
+}
+.about-visual-label {
+  position: absolute;
+  bottom: 24px; left: 24px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.about-content { padding-top: 20px; }
+.about-body {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-mid);
+  line-height: 2.2;
+  margin-top: 36px;
+}
+.about-list {
+  margin-top: 48px;
+  list-style: none;
+}
+.about-list li {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--text-mid);
+  font-weight: 300;
+}
+.about-list li::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* NEWS */
+#news {
+  padding: 160px 60px;
+  border-top: 1px solid var(--border);
+}
+
+.news-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 60px;
+}
+
+.news-list { list-style: none; }
+.news-item {
+  display: grid;
+  grid-template-columns: 120px 80px 1fr auto;
+  align-items: center;
+  gap: 32px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: color 0.3s;
+}
+.news-item:hover { color: var(--gold); }
+.news-item:first-child { border-top: 1px solid var(--border); }
+
+.news-date {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  font-weight: 300;
+}
+.news-tag {
+  font-size: 11px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.news-title {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.5;
+}
+.news-arrow {
+  color: var(--text-dim);
+  font-size: 18px;
+  transition: transform 0.3s, color 0.3s;
+}
+.news-item:hover .news-arrow {
+  transform: translateX(6px);
+  color: var(--gold);
+}
+
+/* CONTACT */
+#contact {
+  padding: 160px 60px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.contact-inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.contact-body {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 2;
+  margin: 32px 0 52px;
+  font-weight: 300;
+}
+.contact-email {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-hover);
+  padding-bottom: 4px;
+  transition: border-color 0.3s;
+}
+.contact-email:hover { border-color: var(--gold); }
+
+/* FOOTER */
+footer {
+  position: relative;
+  z-index: 1;
+  padding: 48px 60px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-copy {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+.footer-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+.footer-links a {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  transition: color 0.3s;
+}
+.footer-links a:hover { color: var(--gold); }
+
+/* REVEAL ANIMATION */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(30px); }
+}
+@keyframes lineDown {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 1; }
+  50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  51% { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+}
+
+@media (max-width: 1024px) {
+  nav { padding: 24px 32px; }
+  nav.scrolled { padding: 16px 32px; }
+  #hero { padding: 0 32px; }
+  #mission, #about { grid-template-columns: 1fr; gap: 60px; padding: 100px 32px; }
+  #services { padding: 100px 32px; }
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+  #news, #contact, footer { padding: 100px 32px; }
+  .news-item { grid-template-columns: 1fr; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="canvas"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="index.html" class="nav-logo">
+    <!-- SVG LOGO -->
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="18" r="7" stroke="#C9954A" stroke-width="1.2"/>
+      <circle cx="14" cy="28" r="5" stroke="#C9954A" stroke-width="1.2"/>
+      <circle cx="34" cy="28" r="5" stroke="#C9954A" stroke-width="1.2"/>
+      <circle cx="24" cy="36" r="4" stroke="#C9954A" stroke-width="1.0" opacity="0.6"/>
+      <line x1="24" y1="11" x2="24" y2="6" stroke="#C9954A" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M24 6 Q28 3 32 5" stroke="#C9954A" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.6"/>
+      <line x1="24" y1="25" x2="14" y2="23" stroke="#C9954A" stroke-width="0.8" opacity="0.5"/>
+      <line x1="24" y1="25" x2="34" y2="23" stroke="#C9954A" stroke-width="0.8" opacity="0.5"/>
+      <line x1="24" y1="25" x2="24" y2="32" stroke="#C9954A" stroke-width="0.8" opacity="0.5"/>
+    </svg>
+    <span class="nav-logo-text">Vigne <span>&</span> Co.</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#mission">Mission</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#news">News</a></li>
+  </ul>
+  <a href="#contact" class="nav-contact">Contact</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-label" id="heroLabel">Vigne &amp; Co. — Est. 2026</div>
+  <h1 class="hero-title" id="heroTitle">
+    事業は、<em>房</em>のように。
+    <span class="line2">広がり、実る。</span>
+  </h1>
+  <p class="hero-copy" id="heroCopy">
+    ひとつの根から、無数の実が生まれる。<br>
+    AIコンテンツ、VTuber、音楽、映像制作——<br>
+    Vigne &amp; Co.はクリエイティブの可能性を<br>
+    ブドウの房のように広げ続ける。
+  </p>
+  <div class="hero-cta">
+    <a href="#services" class="btn-primary">Our Services</a>
+    <a href="#about" class="btn-secondary">
+      <span class="arrow"></span>
+      Learn More
+    </a>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+  <div class="hero-year">©2026</div>
+</section>
+
+<!-- MISSION -->
+<section id="mission">
+  <div class="mission-left reveal">
+    <div class="section-label">Mission</div>
+    <h2 class="section-title">ブドウの木が<br>実を<em>結ぶ</em>ように</h2>
+    <p class="mission-body" id="missionBody">
+      Vigne &amp; Co.は、<strong>AIクリエイティブ</strong>を軸に、コンテンツ制作・VTuber活動・情報発信など、多様な事業を展開します。<br><br>
+      ブドウの房のように、一本の幹から多くの実を育てる——そのビジョンのもと、個人が持つ知識・感性・技術を最大化し、新しい価値を創造し続けます。
+    </p>
+    <div class="mission-stat">
+      <div class="stat-item">
+        <div class="stat-num">4</div>
+        <div class="stat-label">事業領域</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">可能性</div>
+      </div>
+    </div>
+  </div>
+  <div class="mission-right reveal">
+    <blockquote class="mission-quote">
+      "嗜好品のように、<br>深く・豊かに・<br>日常に溶け込む<br>コンテンツを。"
+      <span>— Vigne &amp; Co. Philosophy</span>
+    </blockquote>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-header reveal">
+    <div>
+      <div class="section-label">Services</div>
+      <h2 class="section-title">四つの<em>事業</em></h2>
+    </div>
+  </div>
+  <div class="services-grid" id="servicesGrid">
+    <div class="service-card reveal">
+      <div class="service-num">01</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <circle cx="24" cy="20" r="8"/>
+        <path d="M16 38c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+        <path d="M32 14c2 1.5 4 4 4 8"/>
+        <path d="M16 14c-2 1.5-4 4-4 8"/>
+      </svg>
+      <div class="service-name" id="s1name">VTuber /<br>Vライバー</div>
+      <p class="service-desc" id="s1desc">AIアバター「シャルロット・ド・ヴィーニュ」によるコンテンツ発信。ワイン・コーヒー・AIテクノロジーを独自の世界観で語る情報エンターテインメント。</p>
+      <svg class="service-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-num">02</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <rect x="8" y="12" width="32" height="24" rx="2"/>
+        <path d="M20 20l8 4-8 4V20z" fill="currentColor" opacity="0.4"/>
+      </svg>
+      <div class="service-name" id="s2name">AI コンテンツ<br>制作</div>
+      <p class="service-desc" id="s2desc">FREEPIKによる画像・動画生成、Sunoによる音楽制作。企業・個人クリエイター向けのAIコンテンツ制作サービス。</p>
+      <svg class="service-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-num">03</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <path d="M8 36V20l16-8 16 8v16"/>
+        <rect x="18" y="28" width="12" height="8"/>
+        <path d="M24 20v8"/>
+      </svg>
+      <div class="service-name" id="s3name">アフィリエイト<br>メディア</div>
+      <p class="service-desc" id="s3desc">ワイン・コーヒー・AIツールなど厳選した嗜好品・プロダクトのキュレーション・アフィリエイトメディア運営。</p>
+      <svg class="service-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-num">04</div>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <circle cx="24" cy="24" r="14"/>
+        <path d="M24 10v4M24 34v4M10 24h4M34 24h4"/>
+        <circle cx="24" cy="24" r="4" fill="currentColor" opacity="0.3"/>
+      </svg>
+      <div class="service-name" id="s4name">イベント<br>プロデュース</div>
+      <p class="service-desc" id="s4desc">IT・テクノロジー業界を中心としたイベント企画・運営・渉外対応。オフライン・オンライン双方に対応。</p>
+      <svg class="service-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-visual reveal">
+    <div class="about-visual-inner">
+      <!-- Large grape cluster SVG -->
+      <svg viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="60" r="28" stroke="#C9954A" stroke-width="1"/>
+        <circle cx="72" cy="96" r="22" stroke="#C9954A" stroke-width="1"/>
+        <circle cx="128" cy="96" r="22" stroke="#C9954A" stroke-width="1"/>
+        <circle cx="55" cy="130" r="18" stroke="#C9954A" stroke-width="0.8"/>
+        <circle cx="100" cy="128" r="20" stroke="#C9954A" stroke-width="1"/>
+        <circle cx="145" cy="130" r="18" stroke="#C9954A" stroke-width="0.8"/>
+        <circle cx="75" cy="162" r="15" stroke="#C9954A" stroke-width="0.8"/>
+        <circle cx="112" cy="162" r="16" stroke="#C9954A" stroke-width="0.8"/>
+        <circle cx="96" cy="194" r="13" stroke="#C9954A" stroke-width="0.7" opacity="0.6"/>
+        <line x1="100" y1="32" x2="100" y2="18" stroke="#C9954A" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M100 18 Q112 10 124 14" stroke="#C9954A" stroke-width="1" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="about-visual-label">Vigne & Co. — 2026</div>
+  </div>
+  <div class="about-content reveal">
+    <div class="section-label">About</div>
+    <h2 class="section-title">About<br><em>Vigne & Co.</em></h2>
+    <p class="about-body" id="aboutBody">
+      Vigne &amp; Co.は、AIクリエイティブと嗜好品文化を掛け合わせた個人事業体です。<br><br>
+      ITソフトウェア業界でのイベントプランナー・渉外対応の経験を軸に、FREEPIKやSunoなどのAIツールを活用したコンテンツ制作、VTuber活動、アフィリエイトメディア運営を展開します。
+    </p>
+    <ul class="about-list">
+      <li>屋号：Vigne &amp; Co.（ヴィーニュ・アンド・コー）</li>
+      <li>設立：2026年</li>
+      <li>所在地：東京都大田区</li>
+      <li>事業：AIコンテンツ制作 / VTuber / メディア / イベント</li>
+    </ul>
+  </div>
+</section>
+
+<!-- NEWS -->
+<section id="news">
+  <div class="news-header reveal">
+    <div>
+      <div class="section-label">News</div>
+      <h2 class="section-title"><em>Latest</em> News</h2>
+    </div>
+    <a href="#" class="btn-secondary">
+      <span class="arrow"></span>
+      All News
+    </a>
+  </div>
+  <ul class="news-list" id="newsList">
+    <li><a href="#" class="news-item">
+      <span class="news-date">2026.03</span>
+      <span class="news-tag">News</span>
+      <span class="news-title">Vigne &amp; Co. 開業。AIクリエイティブ事業を始動。</span>
+      <span class="news-arrow">→</span>
+    </a></li>
+    <li><a href="#" class="news-item">
+      <span class="news-date">2026.03</span>
+      <span class="news-tag">Character</span>
+      <span class="news-title">AIアバター「シャルロット・ド・ヴィーニュ」始動予定。</span>
+      <span class="news-arrow">→</span>
+    </a></li>
+    <li><a href="#" class="news-item">
+      <span class="news-date">2026.03</span>
+      <span class="news-tag">Media</span>
+      <span class="news-title">ワイン・コーヒー・AIをテーマにしたアフィリエイトメディアを準備中。</span>
+      <span class="news-arrow">→</span>
+    </a></li>
+  </ul>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner reveal">
+    <div class="section-label" style="justify-content:center;">Contact</div>
+    <h2 class="section-title">お問い合わせ</h2>
+    <p class="contact-body" id="contactBody">
+      コラボレーション・取材・お仕事のご依頼など、<br>お気軽にご連絡ください。
+    </p>
+    <a href="mailto:hello@vigne-co.com" class="contact-email" id="contactEmail">hello@vigne-co.com</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-copy">© 2026 Vigne &amp; Co. All rights reserved.</span>
+  <ul class="footer-links">
+    <li><a href="#">Privacy Policy</a></li>
+    <li><a href="admin.html">Admin</a></li>
+  </ul>
+</footer>
+
+<script>
+// ── Cursor ──────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+(function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+
+// ── Nav scroll ──────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ── Canvas particles ────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W,H,particles=[];
+function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+class P {
+  constructor(){ this.reset(); }
+  reset(){ this.x=Math.random()*W; this.y=Math.random()*H; this.r=Math.random()*2+0.5; this.vx=(Math.random()-0.5)*0.3; this.vy=-Math.random()*0.4-0.1; this.alpha=Math.random()*0.4+0.1; }
+  update(){ this.x+=this.vx; this.y+=this.vy; if(this.y<-10||this.x<-10||this.x>W+10) this.reset(); }
+  draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=`rgba(201,149,74,${this.alpha})`; ctx.fill(); }
+}
+for(let i=0;i<80;i++) particles.push(new P());
+(function loop(){ ctx.clearRect(0,0,W,H); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(loop); })();
+
+// ── Scroll reveal ───────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e,i) => { if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'), i*80); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── Load CMS content ────────────────────────────
+function loadCMS(){
+  const d = JSON.parse(localStorage.getItem('vigneData')||'{}');
+  if(d.heroTitle) document.getElementById('heroTitle').innerHTML = d.heroTitle;
+  if(d.heroCopy) document.getElementById('heroCopy').innerHTML = d.heroCopy;
+  if(d.missionBody) document.getElementById('missionBody').innerHTML = d.missionBody;
+  if(d.aboutBody) document.getElementById('aboutBody').innerHTML = d.aboutBody;
+  if(d.contactBody) document.getElementById('contactBody').innerHTML = d.contactBody;
+  if(d.contactEmail){ const el=document.getElementById('contactEmail'); el.textContent=d.contactEmail; el.href='mailto:'+d.contactEmail; }
+  if(d.s1name) document.getElementById('s1name').innerHTML = d.s1name;
+  if(d.s1desc) document.getElementById('s1desc').innerHTML = d.s1desc;
+  if(d.s2name) document.getElementById('s2name').innerHTML = d.s2name;
+  if(d.s2desc) document.getElementById('s2desc').innerHTML = d.s2desc;
+  if(d.s3name) document.getElementById('s3name').innerHTML = d.s3name;
+  if(d.s3desc) document.getElementById('s3desc').innerHTML = d.s3desc;
+  if(d.s4name) document.getElementById('s4name').innerHTML = d.s4name;
+  if(d.s4desc) document.getElementById('s4desc').innerHTML = d.s4desc;
+  if(d.news && d.news.length){
+    const list = document.getElementById('newsList');
+    list.innerHTML = d.news.map(n=>`
+      <li><a href="#" class="news-item">
+        <span class="news-date">${n.date}</span>
+        <span class="news-tag">${n.tag}</span>
+        <span class="news-title">${n.title}</span>
+        <span class="news-arrow">→</span>
+      </a></li>`).join('');
+  }
+}
+loadCMS();
+</script>
+</body>
+</html>
