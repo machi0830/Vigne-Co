@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vigne & Co. — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0608;
+  --bg2: #110C0F;
+  --bg3: #1A1015;
+  --wine: #8B1A2E;
+  --wine-light: #B02840;
+  --gold: #C9954A;
+  --gold-light: #E0B870;
+  --text: #F0E8E0;
+  --text-mid: #A89888;
+  --text-dim: #6A5A52;
+  --border: rgba(201,149,74,0.15);
+  --border-hover: rgba(201,149,74,0.35);
+  --success: #2A7A4A;
+  --error: #8B2020;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-weight:300; min-height:100vh; }
+
+/* LOGIN */
+#loginScreen {
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; align-items:center; justify-content:center;
+  z-index:200; transition:opacity 0.5s;
+}
+.login-box {
+  width:400px; padding:56px 48px;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  text-align:center;
+}
+.login-logo {
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px; font-weight:300;
+  color:var(--text); margin-bottom:8px;
+  letter-spacing:0.1em;
+}
+.login-logo span { color:var(--gold); }
+.login-sub {
+  font-size:12px; color:var(--text-dim);
+  letter-spacing:0.15em; text-transform:uppercase;
+  margin-bottom:40px;
+}
+.login-field {
+  position:relative; margin-bottom:16px;
+}
+.login-field input {
+  width:100%; padding:14px 16px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif;
+  font-weight:300; outline:none;
+  transition:border-color 0.3s;
+}
+.login-field input:focus { border-color:var(--gold); }
+.login-btn {
+  width:100%; padding:14px;
+  background:var(--gold); border:none;
+  color:var(--bg); font-size:12px;
+  letter-spacing:0.16em; text-transform:uppercase;
+  cursor:pointer; font-family:'DM Sans',sans-serif;
+  font-weight:400; transition:background 0.3s;
+  margin-top:8px;
+}
+.login-btn:hover { background:var(--gold-light); }
+.login-error {
+  font-size:12px; color:#E05050;
+  margin-top:12px; display:none;
+}
+
+/* ADMIN LAYOUT */
+#adminApp { display:none; min-height:100vh; }
+
+.admin-sidebar {
+  position:fixed; top:0; left:0; bottom:0;
+  width:260px; background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  padding:0;
+}
+.sidebar-brand {
+  padding:32px 28px 24px;
+  border-bottom:1px solid var(--border);
+}
+.sidebar-brand-name {
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px; font-weight:600;
+  color:var(--text); letter-spacing:0.08em;
+}
+.sidebar-brand-name span { color:var(--gold); }
+.sidebar-brand-label {
+  font-size:11px; color:var(--text-dim);
+  letter-spacing:0.16em; text-transform:uppercase;
+  margin-top:4px;
+}
+
+.sidebar-nav {
+  padding:20px 0; flex:1; list-style:none;
+}
+.sidebar-nav li a {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 28px; font-size:13px;
+  color:var(--text-mid); text-decoration:none;
+  letter-spacing:0.06em; transition:color 0.2s, background 0.2s;
+  border-left:2px solid transparent;
+}
+.sidebar-nav li a:hover { color:var(--text); background:var(--bg3); }
+.sidebar-nav li a.active {
+  color:var(--gold); border-left-color:var(--gold);
+  background:var(--bg3);
+}
+.sidebar-nav li a svg { width:16px; height:16px; flex-shrink:0; }
+
+.sidebar-footer {
+  padding:20px 28px;
+  border-top:1px solid var(--border);
+  display:flex; gap:12px;
+}
+.sidebar-footer a {
+  font-size:12px; color:var(--text-dim);
+  text-decoration:none; letter-spacing:0.1em;
+  transition:color 0.2s;
+}
+.sidebar-footer a:hover { color:var(--gold); }
+
+/* MAIN */
+.admin-main {
+  margin-left:260px;
+  min-height:100vh;
+  padding:48px;
+}
+
+.admin-header {
+  margin-bottom:40px;
+  display:flex; align-items:center;
+  justify-content:space-between;
+}
+.admin-header-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:32px; font-weight:300;
+  letter-spacing:-0.01em;
+}
+.admin-header-title em { font-style:italic; color:var(--gold); }
+
+.save-all-btn {
+  padding:12px 32px;
+  background:var(--gold); border:none;
+  color:var(--bg); font-size:12px;
+  letter-spacing:0.16em; text-transform:uppercase;
+  cursor:pointer; font-family:'DM Sans',sans-serif;
+  font-weight:400; transition:background 0.3s, transform 0.2s;
+}
+.save-all-btn:hover { background:var(--gold-light); transform:translateY(-1px); }
+.save-all-btn:active { transform:translateY(0); }
+
+/* TABS */
+.tab-bar {
+  display:flex; gap:0;
+  border-bottom:1px solid var(--border);
+  margin-bottom:40px;
+}
+.tab-btn {
+  padding:12px 24px; background:none; border:none;
+  font-size:12px; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--text-dim);
+  cursor:pointer; font-family:'DM Sans',sans-serif;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px; transition:color 0.2s, border-color 0.2s;
+}
+.tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); }
+.tab-btn:hover { color:var(--text-mid); }
+
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* FIELDS */
+.field-group {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:4px; padding:28px 32px;
+  margin-bottom:20px;
+}
+.field-group-title {
+  font-size:12px; font-weight:500;
+  color:var(--gold); letter-spacing:0.15em;
+  text-transform:uppercase; margin-bottom:20px;
+  display:flex; align-items:center; gap:12px;
+}
+.field-group-title::after {
+  content:''; flex:1; height:1px;
+  background:var(--border);
+}
+
+.field-row {
+  margin-bottom:18px;
+}
+.field-row:last-child { margin-bottom:0; }
+.field-label {
+  font-size:12px; color:var(--text-dim);
+  letter-spacing:0.1em; margin-bottom:8px;
+  display:block;
+}
+.field-input, .field-textarea {
+  width:100%; padding:12px 14px;
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); font-size:14px;
+  font-family:'DM Sans',sans-serif; font-weight:300;
+  outline:none; transition:border-color 0.3s;
+  resize:vertical;
+}
+.field-input:focus, .field-textarea:focus { border-color:var(--gold); }
+.field-textarea { min-height:100px; line-height:1.8; }
+
+/* 2 cols */
+.field-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+/* NEWS editor */
+.news-editor-item {
+  background:var(--bg3); border:1px solid var(--border);
+  padding:20px 24px; margin-bottom:12px;
+  position:relative;
+}
+.news-editor-item .field-grid { grid-template-columns:140px 120px 1fr auto; align-items:end; gap:12px; }
+.remove-news-btn {
+  background:none; border:1px solid var(--border);
+  color:var(--text-dim); width:38px; height:38px;
+  cursor:pointer; font-size:16px; transition:color 0.2s, border-color 0.2s;
+  display:flex; align-items:center; justify-content:center;
+}
+.remove-news-btn:hover { color:#E05050; border-color:#E05050; }
+.add-news-btn {
+  background:none; border:1px dashed var(--border);
+  color:var(--text-dim); padding:14px; width:100%;
+  font-size:12px; letter-spacing:0.12em; text-transform:uppercase;
+  cursor:pointer; font-family:'DM Sans',sans-serif;
+  transition:border-color 0.2s, color 0.2s; margin-top:4px;
+}
+.add-news-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:32px; right:32px;
+  background:var(--bg2); border:1px solid var(--gold);
+  padding:16px 28px; font-size:13px; color:var(--text);
+  letter-spacing:0.06em; z-index:500;
+  transform:translateY(20px); opacity:0;
+  transition:transform 0.3s, opacity 0.3s;
+  pointer-events:none;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* Preview link */
+.preview-link {
+  font-size:12px; color:var(--text-dim);
+  letter-spacing:0.1em; text-decoration:none;
+  display:flex; align-items:center; gap:8px;
+  transition:color 0.2s;
+}
+.preview-link:hover { color:var(--gold); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Vigne <span>&</span> Co.</div>
+    <div class="login-sub">Admin Panel</div>
+    <div class="login-field">
+      <input type="password" id="pwInput" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Login</button>
+    <div class="login-error" id="loginError">パスワードが違います</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">Vigne <span>&</span> Co.</div>
+      <div class="sidebar-brand-label">Content Manager</div>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="#" class="active" onclick="switchTab('hero',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+        Hero セクション
+      </a></li>
+      <li><a href="#" onclick="switchTab('mission',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+        Mission
+      </a></li>
+      <li><a href="#" onclick="switchTab('services',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+        Services
+      </a></li>
+      <li><a href="#" onclick="switchTab('about',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg>
+        About
+      </a></li>
+      <li><a href="#" onclick="switchTab('news',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
+        News
+      </a></li>
+      <li><a href="#" onclick="switchTab('contact',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l9 6 9-6"/><rect x="3" y="6" width="18" height="14" rx="2"/></svg>
+        Contact
+      </a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank">← サイトを見る</a>
+      <a href="#" onclick="doLogout()">ログアウト</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-header-title">Content <em>Manager</em></h1>
+      </div>
+      <button class="save-all-btn" onclick="saveAll()">保存して反映</button>
+    </div>
+
+    <!-- HERO -->
+    <div class="tab-panel active" id="panel-hero">
+      <div class="field-group">
+        <div class="field-group-title">Hero セクション</div>
+        <div class="field-row">
+          <label class="field-label">メインタイトル（HTMLタグ使用可）</label>
+          <textarea class="field-textarea" id="heroTitle" style="min-height:80px">事業は、<em>房</em>のように。
+    <span class="line2">広がり、実る。</span></textarea>
+        </div>
+        <div class="field-row">
+          <label class="field-label">サブコピー（&lt;br&gt;で改行）</label>
+          <textarea class="field-textarea" id="heroCopy">ひとつの根から、無数の実が生まれる。&lt;br&gt;
+AIコンテンツ、VTuber、音楽、映像制作——&lt;br&gt;
+Vigne &amp; Co.はクリエイティブの可能性を&lt;br&gt;
+ブドウの房のように広げ続ける。</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- MISSION -->
+    <div class="tab-panel" id="panel-mission">
+      <div class="field-group">
+        <div class="field-group-title">Mission テキスト</div>
+        <div class="field-row">
+          <label class="field-label">本文（&lt;strong&gt;で太字、&lt;br&gt;で改行）</label>
+          <textarea class="field-textarea" id="missionBody" style="min-height:160px">Vigne &amp; Co.は、&lt;strong&gt;AIクリエイティブ&lt;/strong&gt;を軸に、コンテンツ制作・VTuber活動・情報発信など、多様な事業を展開します。&lt;br&gt;&lt;br&gt;
+ブドウの房のように、一本の幹から多くの実を育てる——そのビジョンのもと、個人が持つ知識・感性・技術を最大化し、新しい価値を創造し続けます。</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="tab-panel" id="panel-services">
+      <div class="field-group">
+        <div class="field-group-title">Service 01</div>
+        <div class="field-grid">
+          <div class="field-row">
+            <label class="field-label">サービス名</label>
+            <input class="field-input" id="s1name" value="VTuber /&#10;Vライバー">
+          </div>
+          <div class="field-row">
+            <label class="field-label">説明文</label>
+            <textarea class="field-textarea" id="s1desc">AIアバター「シャルロット・ド・ヴィーニュ」によるコンテンツ発信。ワイン・コーヒー・AIテクノロジーを独自の世界観で語る情報エンターテインメント。</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">Service 02</div>
+        <div class="field-grid">
+          <div class="field-row">
+            <label class="field-label">サービス名</label>
+            <input class="field-input" id="s2name" value="AIコンテンツ制作">
+          </div>
+          <div class="field-row">
+            <label class="field-label">説明文</label>
+            <textarea class="field-textarea" id="s2desc">FREEPIKによる画像・動画生成、Sunoによる音楽制作。企業・個人クリエイター向けのAIコンテンツ制作サービス。</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">Service 03</div>
+        <div class="field-grid">
+          <div class="field-row">
+            <label class="field-label">サービス名</label>
+            <input class="field-input" id="s3name" value="アフィリエイトメディア">
+          </div>
+          <div class="field-row">
+            <label class="field-label">説明文</label>
+            <textarea class="field-textarea" id="s3desc">ワイン・コーヒー・AIツールなど厳選した嗜好品・プロダクトのキュレーション・アフィリエイトメディア運営。</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-group-title">Service 04</div>
+        <div class="field-grid">
+          <div class="field-row">
+            <label class="field-label">サービス名</label>
+            <input class="field-input" id="s4name" value="イベントプロデュース">
+          </div>
+          <div class="field-row">
+            <label class="field-label">説明文</label>
+            <textarea class="field-textarea" id="s4desc">IT・テクノロジー業界を中心としたイベント企画・運営・渉外対応。オフライン・オンライン双方に対応。</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="tab-panel" id="panel-about">
+      <div class="field-group">
+        <div class="field-group-title">About テキスト</div>
+        <div class="field-row">
+          <label class="field-label">About本文</label>
+          <textarea class="field-textarea" id="aboutBody" style="min-height:160px">Vigne &amp; Co.は、AIクリエイティブと嗜好品文化を掛け合わせた個人事業体です。&lt;br&gt;&lt;br&gt;
+ITソフトウェア業界でのイベントプランナー・渉外対応の経験を軸に、FREEPIKやSunoなどのAIツールを活用したコンテンツ制作、VTuber活動、アフィリエイトメディア運営を展開します。</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="tab-panel" id="panel-news">
+      <div class="field-group">
+        <div class="field-group-title">News 記事管理</div>
+        <div id="newsEditorList"></div>
+        <button class="add-news-btn" onclick="addNewsItem()">＋ 記事を追加</button>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="tab-panel" id="panel-contact">
+      <div class="field-group">
+        <div class="field-group-title">Contact 情報</div>
+        <div class="field-row">
+          <label class="field-label">説明文</label>
+          <textarea class="field-textarea" id="contactBody">コラボレーション・取材・お仕事のご依頼など、&lt;br&gt;お気軽にご連絡ください。</textarea>
+        </div>
+        <div class="field-row">
+          <label class="field-label">メールアドレス</label>
+          <input class="field-input" id="contactEmail" value="hello@vigne-co.com">
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">✓ 保存しました。サイトに反映されました。</div>
+
+<script>
+const PASSWORD = 'vigne2026';
+
+function doLogin(){
+  const pw = document.getElementById('pwInput').value;
+  if(pw === PASSWORD){
+    document.getElementById('loginScreen').style.opacity='0';
+    setTimeout(()=>{ document.getElementById('loginScreen').style.display='none'; document.getElementById('adminApp').style.display='block'; }, 500);
+    loadFields();
+  } else {
+    document.getElementById('loginError').style.display='block';
+  }
+}
+
+function doLogout(){
+  document.getElementById('adminApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginScreen').style.opacity='1';
+  document.getElementById('pwInput').value='';
+}
+
+function switchTab(name, el){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  return false;
+}
+
+// Default news
+const defaultNews = [
+  { date:'2026.03', tag:'News', title:'Vigne & Co. 開業。AIクリエイティブ事業を始動。' },
+  { date:'2026.03', tag:'Character', title:'AIアバター「シャルロット・ド・ヴィーニュ」始動予定。' },
+  { date:'2026.03', tag:'Media', title:'ワイン・コーヒー・AIをテーマにしたアフィリエイトメディアを準備中。' },
+];
+
+let newsItems = [];
+
+function renderNewsEditor(){
+  const list = document.getElementById('newsEditorList');
+  list.innerHTML = newsItems.map((n,i) => `
+    <div class="news-editor-item">
+      <div class="field-grid">
+        <div class="field-row">
+          <label class="field-label">日付</label>
+          <input class="field-input" value="${n.date}" oninput="newsItems[${i}].date=this.value" placeholder="2026.03">
+        </div>
+        <div class="field-row">
+          <label class="field-label">タグ</label>
+          <input class="field-input" value="${n.tag}" oninput="newsItems[${i}].tag=this.value" placeholder="News">
+        </div>
+        <div class="field-row">
+          <label class="field-label">タイトル</label>
+          <input class="field-input" value="${n.title}" oninput="newsItems[${i}].title=this.value">
+        </div>
+        <div class="field-row" style="padding-top:22px">
+          <button class="remove-news-btn" onclick="removeNews(${i})">×</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function addNewsItem(){
+  newsItems.unshift({ date:'2026.03', tag:'News', title:'新しい記事タイトル' });
+  renderNewsEditor();
+}
+
+function removeNews(i){
+  newsItems.splice(i,1);
+  renderNewsEditor();
+}
+
+function loadFields(){
+  const d = JSON.parse(localStorage.getItem('vigneData')||'{}');
+  if(d.heroTitle) document.getElementById('heroTitle').value = d.heroTitle;
+  if(d.heroCopy) document.getElementById('heroCopy').value = d.heroCopy;
+  if(d.missionBody) document.getElementById('missionBody').value = d.missionBody;
+  if(d.aboutBody) document.getElementById('aboutBody').value = d.aboutBody;
+  if(d.contactBody) document.getElementById('contactBody').value = d.contactBody;
+  if(d.contactEmail) document.getElementById('contactEmail').value = d.contactEmail;
+  if(d.s1name) document.getElementById('s1name').value = d.s1name;
+  if(d.s1desc) document.getElementById('s1desc').value = d.s1desc;
+  if(d.s2name) document.getElementById('s2name').value = d.s2name;
+  if(d.s2desc) document.getElementById('s2desc').value = d.s2desc;
+  if(d.s3name) document.getElementById('s3name').value = d.s3name;
+  if(d.s3desc) document.getElementById('s3desc').value = d.s3desc;
+  if(d.s4name) document.getElementById('s4name').value = d.s4name;
+  if(d.s4desc) document.getElementById('s4desc').value = d.s4desc;
+  newsItems = d.news ? [...d.news] : [...defaultNews];
+  renderNewsEditor();
+}
+
+function saveAll(){
+  const data = {
+    heroTitle: document.getElementById('heroTitle').value,
+    heroCopy: document.getElementById('heroCopy').value,
+    missionBody: document.getElementById('missionBody').value,
+    aboutBody: document.getElementById('aboutBody').value,
+    contactBody: document.getElementById('contactBody').value,
+    contactEmail: document.getElementById('contactEmail').value,
+    s1name: document.getElementById('s1name').value,
+    s1desc: document.getElementById('s1desc').value,
+    s2name: document.getElementById('s2name').value,
+    s2desc: document.getElementById('s2desc').value,
+    s3name: document.getElementById('s3name').value,
+    s3desc: document.getElementById('s3desc').value,
+    s4name: document.getElementById('s4name').value,
+    s4desc: document.getElementById('s4desc').value,
+    news: newsItems,
+  };
+  localStorage.setItem('vigneData', JSON.stringify(data));
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
